@@ -1,0 +1,50 @@
+name: Deploy Container API 
+
+on:
+  workflow_dispatch:
+  #push:
+  #  branches:
+  #      - master
+
+env:
+  AZURE_WEBAPP_NAME: "demomims"
+
+jobs:
+  build:
+    name: build and scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      # - name: SonarCloud Analysis
+      #   uses: sonarsource/sonarcloud-github-action@v2.1.1
+      #   with:
+      #     args: >
+      #       -Dsonar.organization=${{ secrets.SONARCLOUD_ORGANIZATION_KEY }}
+      #       -Dsonar.projectKey=${{ secrets.SONARCLOUD_PROJECT_KEY }}
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: trimSHA
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+  
+      - uses: mr-smithers-excellent/docker-build-push@v6
+        name: Build & push Docker image
+        with:
+            image: helloapi
+            tags: prd-${{ steps.vars.outputs.sha_short }},latest
+            registry: mimsdemocr.azurecr.io
+            dockerfile: Dockerfile
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
+
+      # - name: deploy to azure web app
+      #   uses: azure/webapps-deploy@v2
+      #   with:
+      #     app-name: ${{ env.AZURE_WEBAPP_NAME }}
+      #     publish-profile: ${{ secrets.API_PUBLISH_SECRET }}
+      #     package: ./publish

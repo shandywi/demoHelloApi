@@ -1,0 +1,50 @@
+name: Deploy API
+
+on:
+  workflow_dispatch:
+  #push:
+  #  branches:
+  #      - master
+
+env:
+  AZURE_WEBAPP_NAME: "demomims"
+
+jobs:
+  build:
+    name: build and scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      
+      - name: SonarCloud Analysis
+        uses: sonarsource/sonarcloud-github-action@v2.1.1
+        with:
+          args: >
+            -Dsonar.organization=${{ secrets.SONARCLOUD_ORGANIZATION_KEY }}
+            -Dsonar.projectKey=${{ secrets.SONARCLOUD_PROJECT_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          
+      - name: install .net core
+        uses: actions/setup-dotnet@v4
+        with:
+            dotnet-version: 8.0.x
+  
+      - name: install depedencies
+        run: dotnet restore ./helloApi/helloApi.csproj
+
+      - name: build 
+        run: dotnet build ./helloApi/helloApi.csproj --configuration Release --no-restore
+
+      - name: publish
+        run: dotnet publish ./helloApi/helloApi.csproj --configuration Release --output ./publish
+
+      - name: deploy to azure web app
+        uses: azure/webapps-deploy@v2
+        with:
+          app-name: ${{ env.AZURE_WEBAPP_NAME }}
+          publish-profile: ${{ secrets.API_PUBLISH_SECRET }}
+          package: ./publish
