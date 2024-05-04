@@ -15,15 +15,15 @@ jobs:
         with:
           fetch-depth: 0
       
-      # - name: SonarCloud Analysis
-      #   uses: sonarsource/sonarcloud-github-action@v2.1.1
-      #   with:
-      #     args: >
-      #       -Dsonar.organization=${{ secrets.SONARCLOUD_ORGANIZATION_KEY }}
-      #       -Dsonar.projectKey=${{ secrets.SONARCLOUD_PROJECT_KEY }}
-      #   env:
-      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: SonarCloud Analysis
+        uses: sonarsource/sonarcloud-github-action@v2.1.1
+        with:
+          args: >
+            -Dsonar.organization=${{ secrets.SONARCLOUD_ORGANIZATION_KEY }}
+            -Dsonar.projectKey=${{ secrets.SONARCLOUD_PROJECT_KEY }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       
       - name: trimSHA
         id: vars
@@ -47,7 +47,6 @@ jobs:
       - name: deploy Container App
         uses: azure/container-apps-deploy-action@v1
         with:
-          # appSourcePath: ${{ github.workspace }}
           acrName: helloapiregistry
           acrUsername: ${{ secrets.DOCKER_USERNAME }}
           acrPassword: ${{ secrets.DOCKER_PASSWORD }}
