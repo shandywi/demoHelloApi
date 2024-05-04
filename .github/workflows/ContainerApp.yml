@@ -2,9 +2,9 @@ name: Deploy API to Container Apps
 
 on:
   workflow_dispatch:
-  # push:
-  #   branches:
-  #     - master
+  push:
+    branches:
+      - main
 
 jobs:
   buildandeploy:
